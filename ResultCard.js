@@ -148,16 +148,6 @@ export default function ResultCard({ result }) {
         </p>
       </div>
 
-      {/* Confidence Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
-        <div
-          className="bg-gradient-to-r from-blue-500 to-purple-600 h-full flex items-center justify-center text-white font-bold transition-all duration-500"
-          style={{ width: `${result.confidence * 100}%` }}
-        >
-          {(result.confidence * 100).toFixed(1)}%
-        </div>
-      </div>
-
       {/* Probabilities */}
       {result.probabilities && (
         <div className="p-4 bg-gray-50 rounded-lg space-y-2">
