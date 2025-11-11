@@ -147,9 +147,9 @@ export default function InputForm({ onResult }) {
         </>
       ) : (
         <>
-          <h2>Upload CSV file</h2>
+          <h2>Upload CSV file (Only check the first ten)</h2>
           <p style={{ fontSize: "0.9em", color: "#666", marginTop: "-10px" }}>
-            Format: <code>Message id, subject, message, spam/ham</code>
+            Format: <code>Message id, subject, message</code> 
           </p>
           <input
             type="file"
