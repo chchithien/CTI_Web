@@ -78,14 +78,21 @@ def predict_single_email(email_text):
         return None
     
     X = extract_features(cleaned_text, email_text)
-    prediction = model.predict(X)[0]
     probability = model.predict_proba(X)[0]
-    
-    # Use the higher probability as the actual prediction
-    spam_prob = float(probability[1])
-    ham_prob = float(probability[0])
-    
-    # Determine prediction based on highest probability
+
+
+    classes = list(model.classes_)
+    print("Model classes order:", classes)
+
+    if 0 in classes and 1 in classes:
+        spam_index = classes.index(0) 
+        ham_index = classes.index(1)   
+    else:
+        spam_index, ham_index = 1, 0 
+
+    spam_prob = float(probability[spam_index])
+    ham_prob = float(probability[ham_index])
+
     final_prediction = 'spam' if spam_prob > ham_prob else 'ham'
     final_confidence = max(spam_prob, ham_prob)
     
@@ -97,6 +104,7 @@ def predict_single_email(email_text):
             'spam': spam_prob
         }
     }
+
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -142,7 +150,7 @@ def predict():
 
 @app.route('/predict-csv', methods=['POST'])
 def predict_csv():
-    """Predict spam for all emails in a CSV file"""
+    """Predict spam for all emails in a CSV file (no label column required)"""
     try:
         # Check if file is present
         if 'file' not in request.files:
@@ -156,36 +164,22 @@ def predict_csv():
         if not allowed_file(file.filename):
             return jsonify({'error': 'Only CSV files are allowed'}), 400
         
-        # Read CSV
         df = pd.read_csv(file)
         
-        # Expected columns: Message id, subject, message, spam/ham
-        # Clean column names (remove spaces, lowercase)
         df.columns = df.columns.str.strip().str.lower()
-        
         print(f"CSV columns found: {df.columns.tolist()}")
         
-        # Detect columns - looking for message/subject/text content
         text_col = None
         subject_col = None
-        label_col = None
         
-        # Find message column
         for col in ['message', 'text', 'content', 'body', 'email']:
             if col in df.columns:
                 text_col = col
                 break
         
-        # Find subject column
         for col in ['subject', 'title']:
             if col in df.columns:
                 subject_col = col
-                break
-        
-        # Find label column
-        for col in ['spam/ham', 'spam', 'label', 'type']:
-            if col in df.columns:
-                label_col = col
                 break
         
         if text_col is None:
@@ -193,15 +187,15 @@ def predict_csv():
                 'error': f'Could not find message column. Available columns: {df.columns.tolist()}'
             }), 400
         
-        print(f"Using columns - Message: '{text_col}', Subject: '{subject_col}', Label: '{label_col}'")
+        print(f"Using columns - Message: '{text_col}', Subject: '{subject_col}'")
         
-        # Make predictions for each row
+        # Predict for each row
         predictions = []
         spam_count = 0
         ham_count = 0
         
         for idx, row in df.iterrows():
-            # Combine subject and message for better prediction
+            # Combine subject + message
             email_text = ""
             if subject_col and pd.notna(row[subject_col]):
                 email_text += str(row[subject_col]) + " "
@@ -214,7 +208,7 @@ def predict_csv():
                     'row': idx + 1,
                     'text_preview': email_text[:100] + '...' if len(email_text) > 100 else email_text,
                     'prediction': result['prediction'],
-                    'confidence': result['confidence']
+                    'confidence': round(result['confidence'], 4)
                 })
                 
                 if result['prediction'] == 'spam':
@@ -222,53 +216,33 @@ def predict_csv():
                 else:
                     ham_count += 1
         
-        # Create results DataFrame
+       
         results_df = df.copy()
         results_df['predicted_label'] = [p['prediction'] for p in predictions]
         results_df['confidence'] = [p['confidence'] for p in predictions]
         
-        # Convert prediction to 0/1 format (same as input)
-        results_df['predicted_spam/ham'] = results_df['predicted_label'].map({'spam': 1, 'ham': 0})
-        
-        # Calculate accuracy if ground truth labels are provided
-        accuracy = None
-        if label_col:
-            # Convert ground truth to spam/ham strings
-            results_df['actual_label'] = results_df[label_col].map({0: 'ham', 1: 'spam', '0': 'ham', '1': 'spam'})
-            
-            # Calculate accuracy
-            correct = (results_df['predicted_label'] == results_df['actual_label']).sum()
-            total = len(results_df)
-            accuracy = (correct / total) * 100 if total > 0 else 0
-        
-        # Save results to CSV in memory
         output_filename = 'spam_detection_results.csv'
         output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
         results_df.to_csv(output_path, index=False)
         
+  
         response_data = {
             'success': True,
             'total_emails': len(predictions),
             'spam_count': spam_count,
             'ham_count': ham_count,
             'spam_percentage': round((spam_count / len(predictions)) * 100, 2) if predictions else 0,
-            'predictions': predictions[:10],  # Return first 10 for preview
+            'predictions': predictions[:10],  
             'download_url': f'/download/{output_filename}',
-            'message': f'Processed {len(predictions)} emails. {spam_count} spam, {ham_count} ham.'
+            'message': f'Processed {len(predictions)} emails — {spam_count} spam, {ham_count} ham.'
         }
-        
-        if accuracy is not None:
-            response_data['accuracy'] = round(accuracy, 2)
-            response_data['message'] += f' Accuracy: {accuracy:.2f}%'
         
         return jsonify(response_data)
     
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({
-            'error': f'CSV processing failed: {str(e)}'
-        }), 500
+        return jsonify({'error': f'CSV processing failed: {str(e)}'}), 500
 
 @app.route('/download/<filename>', methods=['GET'])
 def download_file(filename):
