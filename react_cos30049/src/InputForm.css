@@ -116,3 +116,55 @@
   background-color: #555555;
   color: white;
 }
+
+@media (max-width: 900px) {
+  .input-form {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .input-form button {
+    width: 45%;
+    font-size: 15px;
+  }
+
+  .button-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .mode-switch {
+    margin-top: -20px;
+    margin-left: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .input-form {
+    width: 95%;
+    padding: 16px;
+    box-shadow: none;
+  }
+
+  .input-form h2 {
+    font-size: 18px;
+  }
+
+  .input-form input,
+  .input-form textarea {
+    font-size: 14px;
+  }
+
+  .input-form button {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .mode-switch {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}

@@ -196,23 +196,61 @@
   ;}
 
 .instru-image img {
-  width: 200%;
-  max-width: 700px;
+  width: 120%;
+  max-width: 600px;
   border-radius: 16px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  margin-left: 150px;
 }
 
+/* 🔹 Extra Responsive Adjustments */
 @media (max-width: 900px) {
-  .instru-section {
+  .app-main {
     flex-direction: column;
-    text-align: left;
-    padding: 60px 8%;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .app-main .app-column {
+    margin: 20px 0;
+    width: 100%;
+  }
+
+  .instru-section {
+    padding: 40px 10%;
+  }
+
+  .instru-text h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .app-main {
+    padding: 10px;
+  }
+
+  .instru-text {
+    font-size: 0.95rem;
+  }
+
+  .instru-text h2 {
+    font-size: 1.3rem;
   }
 
   .instru-image img {
     width: 100%;
-    max-width: 400px;
-    margin-top: 24px;
+    margin-left: 0;
+  }
+
+  .bottom-divider {
+    width: 90%;
   }
 }
+
+
+
