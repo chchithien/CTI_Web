@@ -125,6 +125,8 @@ Visit `http://127.0.0.1:8000/docs` to test your API interactively.
 ---
 
 ## 👩‍💻 Author
-**Chi Thien Ly**  
+**Chi Thien Ly: Machine Learning Engineer**  
+**Jinxi Chen: UI/UX Designer**
+**Vallerian Raimon: Project Manager**
 Swinburne University of Technology  
 2025
